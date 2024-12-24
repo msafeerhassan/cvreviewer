@@ -1,1 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CV Optimization Assistant</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1>CV Optimization Assistant</h1>
+        <p class="subtitle">Get expert feedback on your CV/Resume structure, content, and ATS compatibility</p>
+        
+        <div class="api-key-section">
+            <div class="input-group">
+                <label for="apiKey">
+                    <i class="fas fa-key"></i> Google API Key 
+                    <span class="api-note">(Not stored - Required for analysis)</span>
+                </label>
+                <div class="api-input-wrapper">
+                    <input type="password" id="apiKey" placeholder="Enter your Google API Key">
+                    <button type="button" class="toggle-password">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+                <p class="api-help">
+                    <i class="fas fa-info-circle"></i>
+                    Your API key is required but not stored anywhere. You'll need to input it each time you use the application.
+                </p>
+            </div>
+        </div>
+        
+        <div class="input-section">
+            <div class="input-group">
+                <label for="cv"><i class="fas fa-file-upload"></i> Upload CV / Resume</label>
+                <div class="file-upload">
+                    <input type="file" id="cv" accept=".pdf,.doc,.docx,.txt" class="file-input">
+                    <label for="cv" class="file-label">
+                        <span class="file-text">Choose file</span>
+                        <span class="file-button">Browse</span>
+                    </label>
+                </div>
+                <p id="file-name" class="file-name"></p>
+            </div>
+            
+            <div class="input-group">
+                <label for="jobDescription"><i class="fas fa-briefcase"></i> Target Job Description</label>
+                <textarea id="jobDescription" placeholder="Paste the job description you're targeting..."></textarea>
+            </div>
+            
+            <button id="analyzeBtn"><i class="fas fa-search"></i> Analyze CV</button>
+        </div>
 
+        <div id="loader" class="hidden">
+            <div class="spinner"></div>
+            <div class="progress-bar">
+                <div class="progress"></div>
+            </div>
+            <p class="loader-text">Analyzing your CV...</p>
+        </div>
+
+        <div id="results" class="hidden">
+            <div class="scores-container">
+                <div class="score-card">
+                    <div class="score-circle">
+                        <span id="scoreValue">0</span>
+                        <span class="score-label">Match Score</span>
+                    </div>
+                </div>
+                <div class="score-card">
+                    <div class="score-circle ats">
+                        <span id="atsScoreValue">0</span>
+                        <span class="score-label">ATS Score</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="result-section">
+                <h3><i class="fas fa-chart-bar"></i> Detailed Analysis</h3>
+                <p id="matchingAnalysis"></p>
+            </div>
+            
+            <div class="result-section">
+                <h3><i class="fas fa-robot"></i> ATS Optimization Tips</h3>
+                <p id="atsRecommendation"></p>
+            </div>
+            
+            <div class="result-section">
+                <h3><i class="fas fa-file-alt"></i> CV Summary</h3>
+                <p id="description"></p>
+            </div>
+            
+            <div class="result-section">
+                <h3><i class="fas fa-lightbulb"></i> Improvement Recommendations</h3>
+                <p id="recommendation"></p>
+            </div>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html> 
