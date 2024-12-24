@@ -1,0 +1,17 @@
+# Web Framework
+flask==2.0.1                # Core web framework for the application
+Werkzeug==2.0.1            # WSGI web application library, used by Flask
+
+# File Processing
+PyPDF2==3.0.1              # PDF file processing and text extraction
+python-docx==0.8.11        # Microsoft Word (.docx) file processing
+
+# AI/ML
+google-generativeai==0.3.0  # Google's Generative AI (Gemini) API client
+
+# Logging and Error Handling
+logging                     # Built-in Python logging (no installation needed)
+traceback                   # Built-in Python traceback (no installation needed)
+
+# JSON Processing
+json                        # Built-in Python JSON processing (no installation needed) 

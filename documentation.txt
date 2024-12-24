@@ -1,0 +1,173 @@
+# CV Optimization Assistant Documentation
+
+## Project Overview
+The CV Optimization Assistant is a web-based application that helps users optimize their CVs/resumes for specific job applications using AI-powered analysis. It provides detailed feedback on CV content, structure, and ATS (Applicant Tracking System) compatibility.
+
+## Features
+
+### 1. Core Functionality
+- CV/Resume analysis against job descriptions
+- ATS compatibility checking
+- Real-time scoring system
+- Detailed recommendations
+- Secure API key handling
+- Multiple file format support (PDF, DOCX, TXT)
+
+### 2. Technical Components
+
+#### Frontend
+- **HTML/CSS**
+  - Responsive design
+  - Modern UI with gradient effects
+  - Loading animations
+  - Error handling notifications
+  - Progress indicators
+
+- **JavaScript**
+  - Drag-and-drop file upload
+  - Form validation
+  - Real-time API key handling
+  - Auto-save functionality for job descriptions
+  - Error handling and retry mechanisms
+  - Keyboard shortcuts
+
+#### Backend
+- **Flask Framework**
+  - RESTful API endpoints
+  - File processing
+  - Error handling middleware
+  - Security measures
+
+- **AI Integration**
+  - Google's Generative AI (Gemini)
+  - Custom prompt engineering
+  - JSON response parsing
+
+### 3. File Structure
+```
+project_root/
+├── static/
+│   ├── css/
+│   │   └── style.css
+│   └── js/
+│       └── main.js
+├── templates/
+│   └── index.html
+├── app.py
+└── requirements.txt
+```
+
+### 4. Installation & Setup
+
+1. **Environment Setup**
+```bash
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+2. **API Key Configuration**
+- Obtain a Google API key for Gemini
+- Input the key in the web interface when using the application
+
+3. **Running the Application**
+```bash
+python app.py
+```
+
+### 5. Security Features
+- No API key storage
+- File size limitations (10MB)
+- Secure file handling
+- Input validation
+- Error logging
+- MIME type verification
+
+### 6. User Interface Components
+
+#### Input Section
+- API key input with visibility toggle
+- File upload with drag-and-drop
+- Job description textarea with auto-save
+- Clear button for job description
+- Analysis trigger button
+
+#### Results Section
+- Match score display
+- ATS compatibility score
+- Detailed analysis breakdown
+- ATS optimization tips
+- CV summary
+- Improvement recommendations
+
+### 7. Error Handling
+- File size validation
+- File type validation
+- API key validation
+- Network error handling
+- Retry mechanism for failed requests
+- User-friendly error messages
+
+### 8. Performance Optimizations
+- Debounced input handling
+- Progressive loading
+- Efficient DOM manipulation
+- Optimized file processing
+- Response caching
+
+### 9. Accessibility Features
+- Keyboard shortcuts
+- ARIA labels
+- Screen reader compatibility
+- Color contrast compliance
+- Responsive text sizing
+
+### 10. Dependencies
+```plaintext
+Flask==2.0.1                # Web framework
+Werkzeug==2.0.1            # WSGI library
+PyPDF2==3.0.1              # PDF processing
+python-docx==0.8.11        # DOCX processing
+google-generativeai==0.3.0  # AI integration
+```
+
+### 11. API Endpoints
+
+#### GET /
+- Renders the main application interface
+
+#### POST /analyze
+- Accepts multipart form data
+- Parameters:
+  - `cv` (file): CV/Resume file
+  - `jobDescription` (string): Target job description
+  - `apiKey` (string): Google API key
+- Returns: JSON with analysis results
+
+### 12. Development Guidelines
+1. Use consistent code formatting
+2. Follow security best practices
+3. Implement proper error handling
+4. Write clear documentation
+5. Test thoroughly before deployment
+
+### 13. Future Enhancements
+1. Multiple language support
+2. Batch processing capability
+3. PDF report generation
+4. User accounts system
+5. Analytics dashboard
+6. Template suggestions
+
+### 14. Troubleshooting
+- Check API key validity
+- Verify file formats
+- Monitor server logs
+- Check browser console
+- Verify network connectivity
+
+### 15. Support
+For issues and support:
+1. Check error messages
+2. Verify input requirements
+3. Contact administrator
