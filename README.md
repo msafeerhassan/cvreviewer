@@ -23,5 +23,7 @@ Run the app:
 **Requirements**
 
 Python 3.x
+
 Gemini API Key
+
 Listed in requirements.txt.
