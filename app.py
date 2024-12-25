@@ -7,6 +7,7 @@ import traceback
 from PyPDF2 import PdfReader
 from docx import Document
 import io
+import time
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -34,56 +35,61 @@ def index():
 def analyze():
     try:
         logger.info("Starting analysis request")
+        
+        # Validate file presence
         if 'cv' not in request.files:
             return jsonify({'error': 'No file uploaded'}), 400
         
+        # Validate API key
         api_key = request.form.get('apiKey')
         if not api_key:
             return jsonify({'error': 'API key is required'}), 400
+        
+        # Validate job description
+        job_description = request.form.get('jobDescription', '').strip()
+        if not job_description or len(job_description) < 50:
+            return jsonify({'error': 'Please provide a detailed job description'}), 400
             
-        # Configure Gemini API with the provided key
+        # Configure Gemini API with better error handling
         try:
             genai.configure(api_key=api_key)
             model = genai.GenerativeModel('gemini-pro')
         except Exception as e:
             logger.error(f"Failed to configure Gemini API: {str(e)}")
-            return jsonify({'error': 'Invalid API key'}), 400
-        
+            return jsonify({'error': 'Invalid or expired API key'}), 400
+            
         file = request.files['cv']
         
-        # Check if file has an allowed extension
-        allowed_extensions = {'pdf', 'doc', 'docx', 'txt'}
-        if not file.filename or '.' not in file.filename:
-            return jsonify({'error': 'Invalid file format'}), 400
+        # Enhanced file validation
+        if not file.filename:
+            return jsonify({'error': 'Invalid file'}), 400
             
-        extension = file.filename.rsplit('.', 1)[1].lower()
-        if extension not in allowed_extensions:
-            return jsonify({'error': f'File type .{extension} is not supported'}), 400
-        
-        job_description = request.form.get('jobDescription')
-        
-        if not file or not job_description:
-            return jsonify({'error': 'Missing file or job description'}), 400
-
-        logger.info("Extracting text from file")
-        cv_text = extract_text_from_file(file)
-        
-        if not cv_text:
-            return jsonify({'error': 'Could not extract text from file'}), 400
-        
-        if len(cv_text.strip()) < 100:
-            return jsonify({'error': 'CV content appears to be too short or empty'}), 400
+        # Extract and validate text content
+        try:
+            cv_text = extract_text_from_file(file)
+            if not cv_text or len(cv_text.strip()) < 100:
+                return jsonify({'error': 'Could not extract sufficient text from file'}), 400
+        except Exception as e:
+            logger.error(f"Text extraction error: {str(e)}")
+            return jsonify({'error': 'Error reading file content'}), 400
             
-        logger.info("Analyzing CV")
-        result = analyze_cv_job_match(cv_text, job_description, model)
-        
-        logger.info("Analysis complete")
-        return jsonify(result)
-    
+        # Analyze with retry mechanism
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                result = analyze_cv_job_match(cv_text, job_description, model)
+                return jsonify(result)
+            except Exception as e:
+                if attempt == max_retries - 1:
+                    logger.error(f"Analysis failed after {max_retries} attempts: {str(e)}")
+                    raise
+                logger.warning(f"Retry {attempt + 1}/{max_retries} after error: {str(e)}")
+                time.sleep(2 ** attempt)  # Exponential backoff
+                
     except Exception as e:
         error_traceback = traceback.format_exc()
         logger.error(f"Error in analyze endpoint: {str(e)}\nTraceback:\n{error_traceback}")
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': 'An error occurred during analysis. Please try again.'}), 500
 
 def extract_text_from_file(file):
     filename = file.filename.lower()
@@ -118,7 +124,13 @@ def extract_text_from_file(file):
 
 def analyze_cv_job_match(cv_text, job_description, model):
     prompt = f"""
-You are an expert CV/Resume Optimization Assistant with extensive experience in HR, recruitment, and career counseling across various industries. Your role is to analyze resumes and provide detailed, actionable feedback to help users create more effective resumes.
+You are an expert CV/Resume Optimization Assistant. Analyze the following CV and job description:
+
+CV Content:
+{cv_text}
+
+Job Description:
+{job_description}
 
 Core Functions:
 1. Resume Analysis
@@ -217,31 +229,52 @@ Remember to:
         "description": "Brief summary of CV",
         "score": "Numerical score 0-100",
         "recommendation": "Specific actions to improve match",
-        "ats-friendly" : "Numerical score 0-100",
-        "ats-recommendation" : "Specific keywords to be added to the CV/Resume to make it more ats Friendly"
+        "ats-friendly": "Numerical score 0-100",
+        "ats-recommendation": "Specific keywords to be added to the CV/Resume to make it more ATS Friendly"
     }}
     """
     
-    response = model.generate_content(prompt)
-    
     try:
-        # Parse the JSON response
-        result = json.loads(response.text)
+        response = model.generate_content(prompt)
         
-        # Format each text field
-        result['matching_analysis'] = format_analysis_text(result.get('matching_analysis', ''))
-        result['description'] = format_analysis_text(result.get('description', ''))
-        result['recommendation'] = format_analysis_text(result.get('recommendation', ''))
-        result['ats-recommendation'] = format_analysis_text(result.get('ats-recommendation', ''))
+        # Add safety checks for response parsing
+        if not response or not response.text:
+            raise ValueError("Empty response from AI model")
+            
+        # Clean the response text to ensure valid JSON
+        cleaned_response = response.text.strip()
+        if cleaned_response.startswith("```json"):
+            cleaned_response = cleaned_response[7:-3]  # Remove ```json and ``` markers
+            
+        result = json.loads(cleaned_response)
         
+        # Validate required fields
+        required_fields = ['matching_analysis', 'description', 'score', 'recommendation', 
+                         'ats-friendly', 'ats-recommendation']
+        for field in required_fields:
+            if field not in result:
+                result[field] = "Not available"
+            if field in ['score', 'ats-friendly']:
+                try:
+                    result[field] = int(float(str(result[field]).replace('%', '')))
+                except:
+                    result[field] = 0
+                    
         return result
-    except json.JSONDecodeError:
+        
+    except json.JSONDecodeError as e:
+        logger.error(f"JSON parsing error: {str(e)}\nResponse text: {response.text}")
         return {
-            "matching_analysis": "Error processing response",
-            "description": "Unable to analyze",
+            "matching_analysis": "Error analyzing CV",
+            "description": "Unable to process response",
             "score": 0,
-            "recommendation": "Please try again"
+            "recommendation": "Please try again",
+            "ats-friendly": 0,
+            "ats-recommendation": "Error during analysis"
         }
+    except Exception as e:
+        logger.error(f"Error in analyze_cv_job_match: {str(e)}")
+        raise
 
 def format_analysis_text(text):
     if not text:
