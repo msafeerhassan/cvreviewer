@@ -14,4 +14,7 @@ logging                     # Built-in Python logging (no installation needed)
 traceback                   # Built-in Python traceback (no installation needed)
 
 # JSON Processing
-json                        # Built-in Python JSON processing (no installation needed) 
+json                        # Built-in Python JSON processing (no installation needed)
+
+# Server
+gunicorn==21.2.0           # Production WSGI HTTP Server
