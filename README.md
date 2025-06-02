@@ -28,3 +28,5 @@ Python 3.x
 Gemini API Key
 
 Listed in requirements.txt.
+
+<!-- GitAds-Verify: CDZG81WFM3VE8Q2SWJRPAEVT9KIEBP3I -->
